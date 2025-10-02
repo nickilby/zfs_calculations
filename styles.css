@@ -330,6 +330,21 @@ header p {
     background: #c53030;
 }
 
+.load-btn {
+    background: #3182ce;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    margin-right: 8px;
+}
+
+.load-btn:hover {
+    background: #2c5aa0;
+}
+
 /* Responsive Design */
 @media (max-width: 1024px) {
     .table-header,

@@ -270,7 +270,10 @@ class ZFSCalculator {
                 <div class="col">£${(comparison.totalCost || 0).toFixed(2)}</div>
                 <div class="col">£${(comparison.costPerGB || 0).toFixed(4)}</div>
                 <div class="col">
-                    <button class="remove-btn" onclick="calculator.removeComparison(${comparison.id})">
+                    <button class="load-btn" onclick="calculator.loadComparison(${comparison.id})" title="Load this configuration into the form">
+                        Load
+                    </button>
+                    <button class="remove-btn" onclick="calculator.removeComparison(${comparison.id})" title="Remove this configuration">
                         Remove
                     </button>
                 </div>
@@ -283,6 +286,85 @@ class ZFSCalculator {
         this.comparisons = this.comparisons.filter(comp => comp.id !== id);
         this.saveComparisons();
         this.updateComparisonTable();
+    }
+
+    loadComparison(id) {
+        const comparison = this.comparisons.find(comp => comp.id === id);
+        if (!comparison) {
+            alert('Configuration not found.');
+            return;
+        }
+
+        // Extract values from the saved configuration
+        // Parse drive size from config string (e.g., "3.8TB × 5 drives" -> 3.8)
+        const driveSizeMatch = comparison.config.match(/(\d+(?:\.\d+)?)TB/);
+        const driveSize = driveSizeMatch ? parseFloat(driveSizeMatch[1]) : 0;
+        
+        // Parse number of drives from config string
+        const drivesMatch = comparison.config.match(/× (\d+) drives/);
+        const totalDrives = drivesMatch ? parseInt(drivesMatch[1]) : 0;
+        
+        // Calculate unit price from total cost and number of drives
+        const unitPrice = totalDrives > 0 ? comparison.totalCost / totalDrives : 0;
+        
+        // Map pool type back to internal format
+        const poolTypeMap = {
+            'Mirrored': 'mirror',
+            'RAIDZ': 'raidz1',
+            'RAIDZ2': 'raidz2',
+            'RAIDZ3': 'raidz3',
+            'DRAID1': 'draid1',
+            'DRAID2': 'draid2',
+            'DRAID3': 'draid3'
+        };
+        const poolType = poolTypeMap[comparison.poolType] || 'mirror';
+        
+        // Map drive type back to internal format
+        const driveTypeMap = {
+            'SATA': 'sata',
+            'NVME U.2': 'nvme-u2',
+            'NVME U.3': 'nvme-u3',
+            'NVME M.2': 'nvme-m2'
+        };
+        const driveType = driveTypeMap[comparison.driveType] || 'sata';
+
+        // Populate the form fields
+        const fields = {
+            'driveSize': driveSize,
+            'driveCost': unitPrice,
+            'driveModel': comparison.driveModel || '',
+            'driveType': driveType,
+            'totalDrives': totalDrives,
+            'numVdevs': comparison.vdevs || 1,
+            'poolType': poolType,
+            'chassisCost': 0 // This isn't stored in comparisons, so default to 0
+        };
+
+        // Update form elements
+        Object.entries(fields).forEach(([fieldId, value]) => {
+            const element = document.getElementById(fieldId);
+            if (element) {
+                if (element.type === 'range') {
+                    element.value = value;
+                    // Update slider display
+                    const sliderValue = document.getElementById(fieldId + 'Value');
+                    if (sliderValue) {
+                        sliderValue.textContent = value;
+                    }
+                } else {
+                    element.value = value;
+                }
+            }
+        });
+
+        // Trigger calculation to update results
+        this.calculate();
+        
+        // Scroll to the top of the form for better UX
+        document.querySelector('.calculator-form')?.scrollIntoView({ behavior: 'smooth' });
+        
+        // Show feedback
+        alert(`Configuration loaded! You can now modify the values and save a new comparison.`);
     }
 
     clearComparisons() {
