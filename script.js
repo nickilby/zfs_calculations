@@ -218,7 +218,8 @@ class ZFSCalculator {
             rawStorage: storage.rawStorage,
             usableStorage: storage.zfsUsableStorage,
             totalCost: totalCost,
-            costPerGB: costPerGB
+            costPerGB: costPerGB,
+            chassisCost: values.chassisCost
         };
 
         this.comparisons.push(comparison);
@@ -258,6 +259,12 @@ class ZFSCalculator {
         this.comparisons.forEach(comparison => {
             const row = document.createElement('div');
             row.className = 'comparison-row';
+            const chassisCost = comparison.chassisCost || 0;
+            const driveCost = (comparison.totalCost || 0) - chassisCost;
+            const totalCostDisplay = chassisCost > 0 ? 
+                `£${driveCost.toFixed(2)} + £${chassisCost.toFixed(2)} = £${(comparison.totalCost || 0).toFixed(2)}` :
+                `£${(comparison.totalCost || 0).toFixed(2)}`;
+            
             row.innerHTML = 
                 `<div class="col">${comparison.config}</div>
                 <div class="col">${comparison.driveModel}</div>
@@ -267,7 +274,7 @@ class ZFSCalculator {
                 <div class="col">${comparison.vdevs || 1}</div>
                 <div class="col">${(comparison.rawStorage || 0).toFixed(2)} TB</div>
                 <div class="col">${(comparison.usableStorage || 0).toFixed(2)} TB</div>
-                <div class="col">£${(comparison.totalCost || 0).toFixed(2)}</div>
+                <div class="col" title="${chassisCost > 0 ? `Drives: £${driveCost.toFixed(2)}, Chassis: £${chassisCost.toFixed(2)}` : 'No chassis cost'}">${totalCostDisplay}</div>
                 <div class="col">£${(comparison.costPerGB || 0).toFixed(4)}</div>
                 <div class="col">
                     <button class="load-btn" onclick="calculator.loadComparison(${comparison.id})" title="Load this configuration into the form">
@@ -337,7 +344,7 @@ class ZFSCalculator {
             'totalDrives': totalDrives,
             'numVdevs': comparison.vdevs || 1,
             'poolType': poolType,
-            'chassisCost': 0 // This isn't stored in comparisons, so default to 0
+            'chassisCost': comparison.chassisCost || 0
         };
 
         // Update form elements
@@ -440,7 +447,8 @@ class ZFSCalculator {
                             usableStorage: typeof item.usableStorage === 'number' ? item.usableStorage : 0,
                             totalCost: typeof item.totalCost === 'number' ? item.totalCost : 0,
                             costPerGB: typeof item.costPerGB === 'number' ? item.costPerGB : 0,
-                            vdevs: typeof item.vdevs === 'number' ? item.vdevs : 1
+                            vdevs: typeof item.vdevs === 'number' ? item.vdevs : 1,
+                            chassisCost: typeof item.chassisCost === 'number' ? item.chassisCost : 0
                         }));
                         
                         this.comparisons = sanitizedComparisons;
