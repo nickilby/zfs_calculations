@@ -287,7 +287,7 @@ header p {
 
 .table-header {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
     background: #4a5568;
     color: white;
     padding: 15px;
@@ -297,7 +297,7 @@ header p {
 
 .comparison-row {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
     background: white;
     border-bottom: 1px solid #e2e8f0;
     padding: 15px;
@@ -334,7 +334,7 @@ header p {
 @media (max-width: 1024px) {
     .table-header,
     .comparison-row {
-        grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
+        grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
         font-size: 0.9rem;
     }
 }
