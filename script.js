@@ -262,13 +262,13 @@ class ZFSCalculator {
                 `<div class="col">${comparison.config}</div>
                 <div class="col">${comparison.driveModel}</div>
                 <div class="col">${comparison.driveType}</div>
-                <div class="col">£${comparison.unitPrice.toFixed(2)}</div>
+                <div class="col">£${(comparison.unitPrice || 0).toFixed(2)}</div>
                 <div class="col">${comparison.poolType}</div>
-                <div class="col">${comparison.vdevs}</div>
-                <div class="col">${comparison.rawStorage.toFixed(2)} TB</div>
-                <div class="col">${comparison.usableStorage.toFixed(2)} TB</div>
-                <div class="col">£${comparison.totalCost.toFixed(2)}</div>
-                <div class="col">£${comparison.costPerGB.toFixed(4)}</div>
+                <div class="col">${comparison.vdevs || 1}</div>
+                <div class="col">${(comparison.rawStorage || 0).toFixed(2)} TB</div>
+                <div class="col">${(comparison.usableStorage || 0).toFixed(2)} TB</div>
+                <div class="col">£${(comparison.totalCost || 0).toFixed(2)}</div>
+                <div class="col">£${(comparison.costPerGB || 0).toFixed(4)}</div>
                 <div class="col">
                     <button class="remove-btn" onclick="calculator.removeComparison(${comparison.id})">
                         Remove
@@ -341,7 +341,7 @@ class ZFSCalculator {
                 
                 // Validate the imported data
                 if (Array.isArray(imported)) {
-                    // Check if it's a valid comparison array
+                    // Check if it's a valid comparison array and sanitize data
                     const isValid = imported.every(item => 
                         item && 
                         typeof item === 'object' && 
@@ -350,7 +350,18 @@ class ZFSCalculator {
                     );
                     
                     if (isValid) {
-                        this.comparisons = imported;
+                        // Sanitize and validate numeric fields to prevent toFixed errors
+                        const sanitizedComparisons = imported.map(item => ({
+                            ...item,
+                            unitPrice: typeof item.unitPrice === 'number' ? item.unitPrice : 0,
+                            rawStorage: typeof item.rawStorage === 'number' ? item.rawStorage : 0,
+                            usableStorage: typeof item.usableStorage === 'number' ? item.usableStorage : 0,
+                            totalCost: typeof item.totalCost === 'number' ? item.totalCost : 0,
+                            costPerGB: typeof item.costPerGB === 'number' ? item.costPerGB : 0,
+                            vdevs: typeof item.vdevs === 'number' ? item.vdevs : 1
+                        }));
+                        
+                        this.comparisons = sanitizedComparisons;
                         this.saveComparisons();
                         this.updateComparisonTable();
                         alert(`Successfully imported ${imported.length} comparisons!`);
