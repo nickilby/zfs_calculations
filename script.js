@@ -212,6 +212,7 @@ class ZFSCalculator {
             config: `${values.driveSize}TB × ${values.totalDrives} drives`,
             driveModel: values.driveModel || 'Not specified',
             driveType: this.getDriveTypeName(values.driveType),
+            unitPrice: values.driveCost,
             poolType: this.getPoolTypeName(values.poolType),
             vdevs: values.numVdevs,
             rawStorage: storage.rawStorage,
@@ -261,6 +262,7 @@ class ZFSCalculator {
                 `<div class="col">${comparison.config}</div>
                 <div class="col">${comparison.driveModel}</div>
                 <div class="col">${comparison.driveType}</div>
+                <div class="col">£${comparison.unitPrice.toFixed(2)}</div>
                 <div class="col">${comparison.poolType}</div>
                 <div class="col">${comparison.vdevs}</div>
                 <div class="col">${comparison.rawStorage.toFixed(2)} TB</div>
