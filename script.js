@@ -344,7 +344,7 @@ class ZFSCalculator {
                 alert('Error importing file. Please check the file format.');
             }
         };
-        reader.readAsText(file);
+        reader.readAsText(file, "UTF-8");
     }
 }
 
