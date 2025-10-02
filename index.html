@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZFS Storage Calculator</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>ZFS Storage Calculator</h1>
+            <p>Calculate storage capacity, costs, and compare different ZFS configurations</p>
+        </header>
+
+        <div class="calculator-grid">
+            <!-- Main Configuration -->
+            <div class="config-section">
+                <h2>Drive Configuration</h2>
+                <div class="input-group">
+                    <label for="driveSize">Drive Size (TB)</label>
+                    <input type="number" id="driveSize" min="0.1" step="0.1" value="4" placeholder="e.g., 4">
+                </div>
+                
+                <div class="input-group">
+                    <label for="driveCost">Drive Cost (£)</label>
+                    <input type="number" id="driveCost" min="0" step="0.01" value="120" placeholder="e.g., 120">
+                </div>
+                
+                <div class="input-group">
+                    <label for="driveModel">Drive Model</label>
+                    <input type="text" id="driveModel" placeholder="e.g., Crucial BX500, Samsung PM9A3">
+                </div>
+                
+                <div class="input-group">
+                    <label for="driveType">Drive Type</label>
+                    <select id="driveType">
+                        <option value="sata">SATA</option>
+                        <option value="nvme-u2">NVME U.2</option>
+                        <option value="nvme-u3">NVME U.3</option>
+                        <option value="nvme-m2">NVME M.2</option>
+                    </select>
+                </div>
+                
+                <div class="input-group">
+                    <label for="totalDrives">Total Number of Drives</label>
+                    <input type="number" id="totalDrives" min="1" value="8" placeholder="e.g., 8">
+                </div>
+                
+                <div class="input-group">
+                    <label for="numVdevs">Number of VDEVs</label>
+                    <input type="range" id="numVdevs" min="1" max="20" value="1" class="slider">
+                    <span id="numVdevsValue">1</span>
+                </div>
+                
+                <div class="input-group">
+                    <label for="poolType">ZFS Pool Type</label>
+                    <select id="poolType">
+                        <option value="mirror">Mirrored (RAID1)</option>
+                        <option value="raidz1">RAIDZ (RAID5)</option>
+                        <option value="raidz2">RAIDZ2 (RAID6)</option>
+                        <option value="raidz3">RAIDZ3 (RAID7)</option>
+                        <option value="draid1">DRAID1</option>
+                        <option value="draid2">DRAID2</option>
+                        <option value="draid3">DRAID3</option>
+                    </select>
+                </div>
+                
+                <div class="input-group">
+                    <label for="chassisCost">Server Chassis Cost (£)</label>
+                    <input type="number" id="chassisCost" min="0" step="0.01" value="0" placeholder="e.g., 500">
+                </div>
+            </div>
+
+            <!-- Results -->
+            <div class="results-section">
+                <h2>Storage Summary</h2>
+                <div class="result-card">
+                    <div class="result-item">
+                        <span class="label">Cost per GB:</span>
+                        <span class="value" id="costPerGB">£0.00</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="label">Raw Storage:</span>
+                        <span class="value" id="rawStorage">0 TB</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="label">Usable Storage (80%):</span>
+                        <span class="value" id="usableStorage">0 TB</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="label">Drive Cost:</span>
+                        <span class="value" id="driveCostTotal">£0.00</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="label">Chassis Cost:</span>
+                        <span class="value" id="chassisCostDisplay">£0.00</span>
+                    </div>
+                    <div class="result-item total">
+                        <span class="label">Total Cost:</span>
+                        <span class="value" id="totalCost">£0.00</span>
+                    </div>
+                </div>
+                
+                <div class="vdev-info">
+                    <h3>VDEV Configuration</h3>
+                    <div id="vdevDetails"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Comparison Section -->
+        <div class="comparison-section">
+            <h2>Configuration Comparison</h2>
+            <div class="button-group">
+                <button id="addComparison" class="btn-primary">Add to Comparison</button>
+                <button id="clearComparison" class="btn-secondary">Clear All</button>
+                <button id="exportComparisons" class="btn-export">Export</button>
+                <button id="importComparisons" class="btn-import">Import</button>
+                <input type="file" id="importFile" accept=".json" style="display: none;">
+            </div>
+            
+            <div id="comparisonTable" class="comparison-table">
+                <div class="table-header">
+                    <div class="col">Configuration</div>
+                    <div class="col">Drive Model</div>
+                    <div class="col">Drive Type</div>
+                    <div class="col">Pool Type</div>
+                    <div class="col">VDEVs</div>
+                    <div class="col">Raw Storage</div>
+                    <div class="col">Usable Storage</div>
+                    <div class="col">Total Cost</div>
+                    <div class="col">Cost/GB</div>
+                    <div class="col">Actions</div>
+                </div>
+                <div id="comparisonRows"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- URE Information Footnote -->
+    <footer class="ure-footnote">
+        <div class="container">
+            <h3>Understanding URE (Unrecoverable Read Error) Risk</h3>
+            <div class="ure-content">
+                <div class="ure-section">
+                    <h4>What is a URE?</h4>
+                    <p>A Unrecoverable Read Error (URE) occurs when a drive cannot return a requested block of data correctly. Drives have advertised URE rates:</p>
+                    <ul>
+                        <li><strong>Consumer SATA drives:</strong> ~1 in 10¹⁴ bits read</li>
+                        <li><strong>Enterprise SATA/SAS drives:</strong> ~1 in 10¹⁵ bits read</li>
+                        <li><strong>Enterprise NVME drives:</strong> ~1 in 10¹⁶ bits read</li>
+                    </ul>
+                </div>
+                
+                <div class="ure-section">
+                    <h4>Practical Impact</h4>
+                    <p>In human terms, this translates to:</p>
+                    <ul>
+                        <li><strong>Consumer drives (1e14):</strong> 1 error per 12.5 TB read</li>
+                        <li><strong>Enterprise drives (1e15):</strong> 1 error per 125 TB read</li>
+                        <li><strong>Enterprise NVME drives (1e16):</strong> 1 error per 1250 TB read</li>
+                    </ul>
+                    <p>Every 12.5 TB read with consumer drives has a ~37% chance of at least one URE.</p>
+                </div>
+                
+                <div class="ure-section">
+                    <h4>RAIDZ1 Resilver Risk</h4>
+                    <p>During a RAIDZ1 resilver (e.g., 6×8TB = 48TB raw), you must read ~40TB from surviving drives:</p>
+                    <ul>
+                        <li><strong>Consumer disks:</strong> ~96% chance of URE during resilver</li>
+                        <li><strong>Enterprise disks:</strong> ~28% chance of URE during resilver</li>
+                        <li><strong>Enterprise NVME disks:</strong> ~3% chance of URE during resilver</li>
+                    </ul>
+                    <p><strong>Critical:</strong> A single URE during RAIDZ1 resilver = pool failure, since you've already lost one drive and cannot recover that bad sector.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
